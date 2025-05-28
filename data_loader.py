@@ -1,4 +1,5 @@
 import json
+import os
 
 
 def load_existing_mappings(filepath):
@@ -12,3 +13,15 @@ def load_existing_mappings(filepath):
         }
         for row in data
     ]
+
+
+def load_json_or_empty(path):
+    if not os.path.exists(path):
+        print(f"⚠️ Файл исключений не найден: {path}")
+        return {}
+    try:
+        with open(path, encoding="utf-8") as f:
+            return json.load(f)
+    except Exception as e:
+        print(f"❌ Ошибка при чтении {path}: {e}")
+        return {}

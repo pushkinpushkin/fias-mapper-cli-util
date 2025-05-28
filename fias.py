@@ -2,6 +2,7 @@ import time
 import logging
 from dadata_adapter import dadata
 from fias_cache import FiasCache
+from data_loader import load_json_or_empty
 
 logger = logging.getLogger(__name__)
 
@@ -9,29 +10,6 @@ logger = logging.getLogger(__name__)
 fias_cache = FiasCache()
 if fias_cache.is_stale():
     fias_cache.cache.clear()
-
-city_aliases = {
-    "Московская область": "Москва",
-    "МОСКВА ВОСТОК": "Москва",
-    "МОСКВА ЮГ": "Москва",
-    "МОСКВА СЕВЕР": "Москва",
-    "МОСКВА ЗАПАД": "Москва",
-    "КОРОЛЕВ": "Королёв",
-    "Ростов": "Ростов Великий",
-    "ОРЕЛ": "Орёл",
-    "ЩЕЛКОВО": "Щёлково"
-}
-
-city_to_fias = {
-    "Благовещенск": "8f41253d-6e3b-48a9-842a-25ba894bd093",  # Дальневосточный
-    "Благовещенск (Уфа)": "da7ef573-cdbe-458e-a790-b29ad3a3d140",  # Уральский
-    "Троицк": "b5ad78c2-cc8f-4769-9a9f-75743d8da02f",  # Уральский
-    "Троицк (Москва)": "7dde11f6-f6ab-4a05-8052-78e0cab8fc59",  # Москва
-    "Мирный (Архангельск)": "977c7606-1b37-4424-84f7-b0c66c3e4b94",  # Архангельская область
-    "Мирный (Якутск)": "62d403af-d460-4e79-a90b-8b6a351af3b1",  # Дальневосточный Республика Саха (Якутия)
-    "Березовский": "adf5df2b-2c2e-45a9-b971-05550353cf43",  # Уральский
-    "Березовский (Кемерово)": "ef6bac92-b712-42ba-942b-515b36b9a32c"  # Сибирский
-}
 
 
 def normalize_city_name(name: str) -> str:
@@ -47,6 +25,9 @@ def normalize_city_name(name: str) -> str:
 def get_fias_id(city_name):
     if not city_name:
         return None
+
+    city_aliases = load_json_or_empty("exceptions/city_aliases.json")
+    city_to_fias = load_json_or_empty("exceptions/city_to_fias.json")
 
     original_name = city_name.strip()
     original_name = city_aliases.get(original_name, original_name)
