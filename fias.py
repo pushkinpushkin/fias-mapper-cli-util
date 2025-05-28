@@ -1,6 +1,6 @@
 import time
 import logging
-from dadata_adapter import dadata
+from dadata_adapter import DadataClient
 from fias_cache import FiasCache
 from data_loader import load_json_or_empty
 
@@ -10,6 +10,8 @@ logger = logging.getLogger(__name__)
 fias_cache = FiasCache()
 if fias_cache.is_stale():
     fias_cache.cache.clear()
+
+dadata = DadataClient()
 
 
 def normalize_city_name(name: str) -> str:
