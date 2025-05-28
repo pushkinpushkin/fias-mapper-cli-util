@@ -6,9 +6,9 @@ from fias_cache import FiasCache
 logger = logging.getLogger(__name__)
 
 # Очистка кеша при устаревании
-cache = FiasCache()
-if cache.is_stale():
-    cache.cache.clear()
+fias_cache = FiasCache()
+if fias_cache.is_stale():
+    fias_cache.cache.clear()
 
 city_aliases = {
     "Московская область": "Москва",
@@ -54,7 +54,7 @@ def get_fias_id(city_name):
 
     if len(normalized_name) > 300:
         logger.warning(f"❌ Пропуск: '{normalized_name}' слишком длинное (>300 символов)")
-        return None
+        return
 
     if normalized_name in ("", "nan", "-", "none"):
         logger.warning(f"❌ Непригодное имя города: '{normalized_name}'")
@@ -63,13 +63,13 @@ def get_fias_id(city_name):
     # 1. Проверка в словаре переопределений
     if original_name in city_to_fias:
         fias_id = city_to_fias[original_name]
-        cache.cache[original_name] = fias_id
-        cache.save()
+        fias_cache.cache[original_name] = fias_id
+        fias_cache.save()
         return fias_id
 
     # 2. Проверка в кеше
-    if original_name in cache.cache:
-        return cache.cache[original_name]
+    if original_name in fias_cache.cache:
+        return fias_cache.cache[original_name]
 
     try:
         time.sleep(0.05)
@@ -87,23 +87,23 @@ def get_fias_id(city_name):
                     "settlement"].strip().lower() == normalized_name:
                     fias_id = data.get("settlement_fias_id")
                     if fias_id:
-                        cache.cache[original_name] = fias_id
-                        cache.save()
+                        fias_cache.cache[original_name] = fias_id
+                        fias_cache.save()
                         return fias_id
 
                 if data.get("city") and data["city"].strip().lower() == normalized_name:
                     fias_id = data.get("city_fias_id")
                     if fias_id:
-                        cache.cache[original_name] = fias_id
-                        cache.save()
+                        fias_cache.cache[original_name] = fias_id
+                        fias_cache.save()
                         return fias_id
 
                 if not data.get("city") and data.get("settlement") and data[
                     "settlement"].strip().lower() == normalized_name:
                     fias_id = data.get("settlement_fias_id")
                     if fias_id:
-                        cache.cache[original_name] = fias_id
-                        cache.save()
+                        fias_cache.cache[original_name] = fias_id
+                        fias_cache.save()
                         return fias_id
 
         logger.warning(
@@ -118,11 +118,11 @@ def get_suggestion_hint(city_name):
     original_name = city_name.strip()
     normalized_name = normalize_city_name(original_name)
 
-    if "_suggests" not in cache.cache:
-        cache.cache["_suggests"] = {}
+    if "_suggests" not in fias_cache.cache:
+        fias_cache.cache["_suggests"] = {}
 
-    if original_name in cache.cache["_suggests"]:
-        return cache.cache["_suggests"][original_name]
+    if original_name in fias_cache.cache["_suggests"]:
+        return fias_cache.cache["_suggests"][original_name]
 
     try:
         time.sleep(0.05)
@@ -135,8 +135,8 @@ def get_suggestion_hint(city_name):
 
                 if fias_level in ("4", "6"):
                     hint = suggestion.get("unrestricted_value")
-                    cache.cache["_suggests"][original_name] = hint
-                    cache.save()
+                    fias_cache.cache["_suggests"][original_name] = hint
+                    fias_cache.save()
                     return hint
 
             # Если ничего не подошло по уровню
@@ -144,8 +144,8 @@ def get_suggestion_hint(city_name):
         else:
             hint = "нет совпадений"
 
-        cache.cache["_suggests"][original_name] = hint
-        cache.save()
+        fias_cache.cache["_suggests"][original_name] = hint
+        fias_cache.save()
         return hint
 
     except Exception as e:
@@ -157,8 +157,8 @@ def get_city_name_by_fias_id(fias_id):
     if not fias_id:
         return None
 
-    if fias_id in cache.cache:
-        return cache.cache[fias_id]
+    if fias_id in fias_cache.cache:
+        return fias_cache.cache[fias_id]
 
     try:
         time.sleep(0.05)
@@ -166,8 +166,8 @@ def get_city_name_by_fias_id(fias_id):
         if result:
             name = result[0].get("value")
             if name:
-                cache.cache[fias_id] = name
-                cache.save()
+                fias_cache.cache[fias_id] = name
+                fias_cache.save()
                 return name
     except Exception as e:
         logger.error(f"🚨 Ошибка при получении имени по FIAS ID '{fias_id}': {e}")
