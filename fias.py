@@ -24,7 +24,7 @@ def normalize_city_name(name: str) -> str:
 
 def get_fias_id(city_name):
     if not city_name:
-        return None
+        return
 
     city_aliases = load_json_or_empty("exceptions/city_aliases.json")
     city_to_fias = load_json_or_empty("exceptions/city_to_fias.json")
@@ -39,7 +39,7 @@ def get_fias_id(city_name):
 
     if normalized_name in ("", "nan", "-", "none"):
         logger.warning(f"❌ Непригодное имя города: '{normalized_name}'")
-        return None
+        return
 
     # 1. Проверка в словаре переопределений
     if original_name in city_to_fias:
@@ -92,7 +92,7 @@ def get_fias_id(city_name):
     except Exception as e:
         logger.error(f"🚨 Ошибка при получении FIAS ID для '{original_name}': {e}")
 
-    return None
+    return
 
 
 def get_suggestion_hint(city_name):
@@ -131,12 +131,12 @@ def get_suggestion_hint(city_name):
 
     except Exception as e:
         logger.error(f"🚨 Ошибка при получении подсказки для '{original_name}': {e}")
-        return None
+        return
 
 
 def get_city_name_by_fias_id(fias_id):
     if not fias_id:
-        return None
+        return
 
     if fias_id in fias_cache.cache:
         return fias_cache.cache[fias_id]
@@ -153,4 +153,4 @@ def get_city_name_by_fias_id(fias_id):
     except Exception as e:
         logger.error(f"🚨 Ошибка при получении имени по FIAS ID '{fias_id}': {e}")
 
-    return None
+    return
